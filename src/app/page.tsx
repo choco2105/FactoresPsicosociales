@@ -8,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
 
 const pages = [
   {
@@ -92,7 +93,7 @@ const pages = [
   {
     title: "Pregunta 7",
     questionText: "¿Las situaciones de conflictividad entre trabajadores, ¿se intentan solucionar de manera abierta y clara?",
-    options: ["No", "Sí, por medio de la intervención del mando", "Sí, entre todos los afectados", "Sí, mediante otros procedimientos"],
+    options: ["No", "Sí, por medio de la intervención del mando", "Sí, entre todos los afectados", "Sí, entre todos los afectados", "Sí, mediante otros procedimientos"],
     id: "pregunta7",
     required: true,
   },
@@ -270,6 +271,7 @@ export default function Home() {
   const [answers, setAnswers] = useState<{ [key: string]: string | string[] }>({});
   const router = useRouter();
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const { toast } = useToast();
 
   useEffect(() => {
     const storedAnswers = localStorage.getItem("answers");
@@ -290,7 +292,6 @@ export default function Home() {
       currentPage.questions.forEach((question) => {
         if (question.required && !answers[question.id]) {
           if (question.type === "checkbox") {
-            // Checkbox group validation
             if (!answers[question.id] || (Array.isArray(answers[question.id]) && answers[question.id].length === 0)) {
               newErrors[question.id] = "Este campo es obligatorio.";
             }
@@ -319,7 +320,7 @@ export default function Home() {
   
       let updatedValues: string[] = [];
       if (!isChecked) {
-        updatedValues = [value]; // Only allow one selection
+        updatedValues = [value];
       }
   
       return { ...prev, [id]: updatedValues };
@@ -333,13 +334,78 @@ export default function Home() {
 
   const handleSubmit = () => {
     if (validatePage()) {
-      console.log("Form submitted with answers:", answers);
+      const x1 = getScore("pregunta1", { A: 5, B: 3, C: 3, D: 0 });
+      const x2 = getScore("pregunta2", { A: 5, B: 5, C: 3, D: 0 });
+      const x3 = getScore("pregunta3", { A: 5, B: 3, C: 1, D: 0 });
+      const x4 = getScore("pregunta4", { A: 5, B: 3, C: 1, D: 0 });
+      const x5 = getScore("pregunta5", { A: 5, B: 3, C: 3, D: 0 });
+      const x6 = getScore("pregunta6", { A: 0, B: 1, C: 3, D: 5 });
+      const x7 = getScore("pregunta7", { A: 5, B: 3, C: 0, D: 0 });
+      const x8 = getScore("pregunta8", { A: 3, B: 4, C: 1, D: 0 });
+      const x9 = getScore("pregunta9", { A: 5, B: 3, C: 0 });
+      const x10 = getScore("pregunta10", { A: 5, B: 5, C: 2, D: 0 });
+      const x11 = getScore("pregunta11", { A: 5, B: 3, C: 3, D: 0 });
+      const x12 = getScore("pregunta12", { A: 5, B: 3, C: 1, D: 0 });
+      const x13 = getScore("pregunta13", { A: 5, B: 2, C: 0 });
+      const x14 = getScore("pregunta14", { A: 0, B: 5, C: 5, D: 5 });
+      const x15 = getScore("pregunta15", { A: 0, B: 0, C: 4 });
+      const x16 = getScore("pregunta16", { A: 5, B: 3, C: 3, D: 0 });
+      const x17 = getScore("pregunta17", { A: 5, B: 5, C: 5, D: 2, E: 0 });
+      const x18 = getScore("pregunta18", { A: 5, B: 5, C: 3, D: 0 });
+      const x19 = getScore("pregunta19", { A: 5, B: 3, C: 3, D: 0 });
+      const x20 = getScore("pregunta20", { A: 5, B: 3, C: 1, D: 0 });
+      const x21 = getScore("pregunta21", { A: 4, B: 2, C: 0 });
+      const x22 = getScore("pregunta22", { A: 5, B: 5, C: 3, D: 0 });
+      const x23 = getScore("pregunta23", { A: 5, B: 3, C: 1, D: 0 });
+      const x24 = getScore("pregunta24", { A: 5, B: 2, C: 2, D: 0 });
+      const x25 = getScore("pregunta25", { A: 5, B: 3, C: 1, D: 0 });
+      const x26 = getScore("pregunta26", { A: 5, B: 3, C: 3, D: 0 });
+      const x27 = getScore("pregunta27", { A: 0, B: 3, C: 3, D: 5 });
+      const x28 = getScore("pregunta28", { A: 1, B: 0 });
+      const x29 = getScore("pregunta29", { A: 1, B: 0 });
+      const x30 = getScore("pregunta30", { A: 1, B: 0 });
+
+      const pir = x1 + x2 + x8 + x9 + x13 + x18 + x19 + x20 + x25;
+      const fic = x4 + x5 + x11 + x16 + x17 + x24 + x26;
+      const gdt = x3 + x10 + x14 + x15 + x22;
+      const cdg = x6 + x7 + x12 + x21 + x23 + x27;
+      const mob = x28 + x29 + x30;
+
+      toast({
+        title: "Resultados",
+        description: (
+          <>
+            Participación Implicación Responsabilidad: {pir}
+            <br />
+            Formación Información Comunicación: {fic}
+            <br />
+            Gestión del Tiempo: {gdt}
+            <br />
+            Cohesión de Grupo: {cdg}
+            <br />
+            Mobbing: {mob}
+          </>
+        ),
+      });
+
+      setAnswers({});
       localStorage.removeItem("answers");
-      window.alert(JSON.stringify(answers, null, 2));
-      router.push("/");
+      setPage(0);
     } else {
-      window.alert("Por favor, complete todos los campos obligatorios.");
+      toast({
+        title: "Error",
+        description: "Por favor, complete todos los campos obligatorios.",
+        variant: "destructive",
+      });
     }
+  };
+
+  const getScore = (questionId: string, scores: { [key: string]: number }) => {
+    const answer = answers[questionId];
+    if (typeof answer === 'string' && scores[answer]) {
+      return scores[answer];
+    }
+    return 0;
   };
 
   const renderPageContent = () => {
@@ -479,7 +545,11 @@ export default function Home() {
               if (validatePage()) {
                 setPage(page + 1)
               } else {
-                window.alert("Por favor, complete todos los campos obligatorios.");
+                toast({
+                  title: "Error",
+                  description: "Por favor, complete todos los campos obligatorios.",
+                  variant: "destructive",
+                });
               }
             }}>Next</Button>
           )}
