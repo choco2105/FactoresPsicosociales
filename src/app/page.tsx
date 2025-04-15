@@ -38,6 +38,7 @@ const pages = [
         id: "jornada",
         options: ["1 turno", "2 turnos", "3 turnos", "otros turnos"],
         required: true,
+        alternatives: ["A", "B", "C", "D"]
       },
       { label: "Cargo:", type: "text", id: "cargo", required: true },
       {
@@ -343,13 +344,13 @@ export default function Home() {
   };
 
   const handleSubmit = () => {
-     if (validatePage()) {
+    if (validatePage()) {
       let pir = 0;
       let fic = 0;
       let gdt = 0;
       let cdg = 0;
       let mob = 0;
-
+  
       const scores = {
         pregunta1: { A: 5, B: 3, C: 3, D: 0 },
         pregunta2: { A: 5, B: 5, C: 3, D: 0 },
@@ -382,7 +383,7 @@ export default function Home() {
         pregunta29: { A: 1, B: 0 },
         pregunta30: { A: 1, B: 0 },
       };
-
+  
       pir =
         getScore("pregunta1", scores["pregunta1"]) +
         getScore("pregunta2", scores["pregunta2"]) +
@@ -393,7 +394,7 @@ export default function Home() {
         getScore("pregunta19", scores["pregunta19"]) +
         getScore("pregunta20", scores["pregunta20"]) +
         getScore("pregunta25", scores["pregunta25"]);
-
+  
       fic =
         getScore("pregunta4", scores["pregunta4"]) +
         getScore("pregunta5", scores["pregunta5"]) +
@@ -402,14 +403,14 @@ export default function Home() {
         getScore("pregunta17", scores["pregunta17"]) +
         getScore("pregunta24", scores["pregunta24"]) +
         getScore("pregunta26", scores["pregunta26"]);
-
+  
       gdt =
         getScore("pregunta3", scores["pregunta3"]) +
         getScore("pregunta10", scores["pregunta10"]) +
         getScore("pregunta14", scores["pregunta14"]) +
         getScore("pregunta15", scores["pregunta15"]) +
         getScore("pregunta22", scores["pregunta22"]);
-
+  
       cdg =
         getScore("pregunta6", scores["pregunta6"]) +
         getScore("pregunta7", scores["pregunta7"]) +
@@ -417,41 +418,40 @@ export default function Home() {
         getScore("pregunta21", scores["pregunta21"]) +
         getScore("pregunta23", scores["pregunta23"]) +
         getScore("pregunta27", scores["pregunta27"]);
-
+  
       mob =
         getScore("pregunta28", scores["pregunta28"]) +
         getScore("pregunta29", scores["pregunta29"]) +
         getScore("pregunta30", scores["pregunta30"]);
-
-
-      toast({
-        title: "Resultados",
-        description: (
-          <>
-            Participación Implicación Responsabilidad: {pir}
-            <br />
-            Formación Información Comunicación: {fic}
-            <br />
-            Gestión del Tiempo: {gdt}
-            <br />
-            Cohesión de Grupo: {cdg}
-            <br />
-            Mobbing: {mob}
-          </>
-        ),
-      });
-
-      setAnswers({});
-      localStorage.removeItem("answers");
-      setPage(0);
-    } else {
-      toast({
-        title: "Error",
-        description: "Por favor, complete todos los campos obligatorios.",
-        variant: "destructive",
-      });
-    }
-  };
+  
+        toast({
+          title: "Resultados",
+          description: (
+            <>
+              Participación Implicación Responsabilidad: {pir}
+              <br />
+              Formación Información Comunicación: {fic}
+              <br />
+              Gestión del Tiempo: {gdt}
+              <br />
+              Cohesión de Grupo: {cdg}
+              <br />
+              Mobbing: {mob}
+            </>
+          ),
+        });
+  
+        setAnswers({});
+        localStorage.removeItem("answers");
+        setPage(0);
+      } else {
+        toast({
+          title: "Error",
+          description: "Por favor, complete todos los campos obligatorios.",
+          variant: "destructive",
+        });
+      }
+    };
 
   const getScore = (questionId: string, scores: { [key: string]: number }) => {
     const answer = answers[questionId];
@@ -523,14 +523,14 @@ export default function Home() {
                         {question.required && <span className="text-red-500">*</span>}
                       </Label>
                       <div className="mt-1 grid grid-cols-2 gap-2">
-                        {question.options?.map((option) => (
+                        {question.options?.map((option, index) => (
                           <label key={option} className="flex items-center space-x-2">
                             <Checkbox
                               id={question.id + "_" + option.split(' ')[0]}
                               checked={answers[question.id] === option}
                               onCheckedChange={(checked) => {
                                 if (checked) {
-                                  handleRadioChange(question.id, option);
+                                  handleRadioChange(question.id, question.alternatives ? question.alternatives[index] : option);
                                 } else {
                                   handleRadioChange(question.id, "");
                                 }
@@ -638,4 +638,3 @@ export default function Home() {
     </div>
   );
 }
-
