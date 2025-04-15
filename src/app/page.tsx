@@ -38,7 +38,6 @@ const pages = [
         id: "jornada",
         options: ["1 turno", "2 turnos", "3 turnos", "otros turnos"],
         required: true,
-        alternatives: ["A", "B", "C", "D"]
       },
       { label: "Cargo:", type: "text", id: "cargo", required: true },
       {
@@ -254,7 +253,7 @@ const pages = [
   },
   {
     title: "Pregunta 30",
-    questionText: "¿Hay alguna persona que está siendo aislada, ignorada o excluida del grupo en virtud de características físicas o personales?",
+    questionText: "¿Hay alguna persona que está siendo aislada, ignorada o excluida del grupo en virtud de características fisicas o personales?",
     options: ["A", "B"],
     id: "pregunta30",
     required: true,
@@ -269,7 +268,7 @@ const pages = [
 
 export default function Home() {
   const [page, setPage] = useState(0);
-  const [answers, setAnswers] = useState<{ [key: string]: string | string[] }>({});
+  const [answers, setAnswers] = useState<{ [key: string]: string }>({});
   const router = useRouter();
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const { toast } = useToast();
@@ -292,18 +291,7 @@ export default function Home() {
     if (currentPage.questions) {
       currentPage.questions.forEach((question) => {
         if (question.required && !answers[question.id]) {
-          if (question.type === "checkbox") {
-            if (!answers[question.id] || (Array.isArray(answers[question.id]) && answers[question.id].length === 0)) {
-              newErrors[question.id] = "Este campo es obligatorio.";
-            }
-          } else if (question.type === "radio") {
-            if (!answers[question.id]) {
-              newErrors[question.id] = "Este campo es obligatorio.";
-            }
-          }
-           else {
-            newErrors[question.id] = "Este campo es obligatorio.";
-          }
+          newErrors[question.id] = "Este campo es obligatorio.";
         }
       });
     } else if (currentPage.required && !answers[currentPage.id]) {
@@ -319,25 +307,6 @@ export default function Home() {
     setErrors((prevErrors) => ({ ...prevErrors, [id]: "" }));
   };
 
-  const handleCheckboxChange = (id: string, value: string) => {
-    setAnswers((prev) => {
-      const currentValues = prev[id] ? (Array.isArray(prev[id]) ? prev[id] : [prev[id]]) : [];
-      const isChecked = currentValues.includes(value);
-  
-      let updatedValues: string[] = [];
-      if (!isChecked) {
-        updatedValues = [value];
-      }
-  
-      return { ...prev, [id]: updatedValues };
-    });
-  };
-
-    const handleRadioChange = (id: string, value: string) => {
-    setAnswers((prev) => ({ ...prev, [id]: value }));
-    setErrors((prevErrors) => ({ ...prevErrors, [id]: "" }));
-  };
-
   const handleOptionChange = (id: string, value: string) => {
     setAnswers((prev) => ({ ...prev, [id]: value }));
     setErrors((prevErrors) => ({ ...prevErrors, [id]: "" }));
@@ -345,12 +314,6 @@ export default function Home() {
 
   const handleSubmit = () => {
     if (validatePage()) {
-      let pir = 0;
-      let fic = 0;
-      let gdt = 0;
-      let cdg = 0;
-      let mob = 0;
-  
       const scores = {
         pregunta1: { A: 5, B: 3, C: 3, D: 0 },
         pregunta2: { A: 5, B: 5, C: 3, D: 0 },
@@ -382,6 +345,17 @@ export default function Home() {
         pregunta28: { A: 1, B: 0 },
         pregunta29: { A: 1, B: 0 },
         pregunta30: { A: 1, B: 0 },
+      };
+  
+      let pir = 0;
+      let fic = 0;
+      let gdt = 0;
+      let cdg = 0;
+      let mob = 0;
+      
+      const getScore = (questionId: string, scores: { [key: string]: number }) => {
+        const answer = answers[questionId];
+        return answer ? scores[answer] : 0;
       };
   
       pir =
@@ -424,41 +398,33 @@ export default function Home() {
         getScore("pregunta29", scores["pregunta29"]) +
         getScore("pregunta30", scores["pregunta30"]);
   
-        toast({
-          title: "Resultados",
-          description: (
-            <>
-              Participación Implicación Responsabilidad: {pir}
-              <br />
-              Formación Información Comunicación: {fic}
-              <br />
-              Gestión del Tiempo: {gdt}
-              <br />
-              Cohesión de Grupo: {cdg}
-              <br />
-              Mobbing: {mob}
-            </>
-          ),
-        });
+      toast({
+        title: "Resultados",
+        description: (
+          <>
+            Participación Implicación Responsabilidad: {pir}
+            <br />
+            Formación Información Comunicación: {fic}
+            <br />
+            Gestión del Tiempo: {gdt}
+            <br />
+            Cohesión de Grupo: {cdg}
+            <br />
+            Mobbing: {mob}
+          </>
+        ),
+      });
   
-        setAnswers({});
-        localStorage.removeItem("answers");
-        setPage(0);
-      } else {
-        toast({
-          title: "Error",
-          description: "Por favor, complete todos los campos obligatorios.",
-          variant: "destructive",
-        });
-      }
-    };
-
-  const getScore = (questionId: string, scores: { [key: string]: number }) => {
-    const answer = answers[questionId];
-      if (answer && scores[answer]) {
-        return scores[answer];
-      }
-    return 0;
+      setAnswers({});
+      localStorage.removeItem("answers");
+      setPage(0);
+    } else {
+      toast({
+        title: "Error",
+        description: "Por favor, complete todos los campos obligatorios.",
+        variant: "destructive",
+      });
+    }
   };
 
   const renderPageContent = () => {
@@ -485,6 +451,7 @@ export default function Home() {
                       className="mt-1 p-2 border rounded-md w-full"
                       value={answers[question.id] || ""}
                       onChange={(e) => handleInputChange(question.id, e.target.value)}
+                      required={question.required}
                     />
                     {errors[question.id] && <p className="text-red-500 text-sm">{errors[question.id]}</p>}
                   </>
@@ -500,14 +467,10 @@ export default function Home() {
                         <label key={option} className="flex items-center space-x-2">
                           <Checkbox
                             id={question.id + "_" + option.split(' ')[0]}
-                            checked={Array.isArray(answers[question.id]) && answers[question.id].includes(option)}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                handleCheckboxChange(question.id, option);
-                              } else {
-                                handleCheckboxChange(question.id, "");
-                              }
-                            }}
+                            checked={answers[question.id] === option}
+                            onCheckedChange={(checked) =>
+                              handleOptionChange(question.id, option)
+                            }
                           />
                           <span>{option}</span>
                         </label>
@@ -517,32 +480,28 @@ export default function Home() {
                   </>
                 )}
                 {question.type === "radio" && (
-                    <>
-                      <Label className="block text-sm font-medium text-gray-700">
-                        {question.label}
-                        {question.required && <span className="text-red-500">*</span>}
-                      </Label>
-                      <div className="mt-1 grid grid-cols-2 gap-2">
-                        {question.options?.map((option, index) => (
-                          <label key={option} className="flex items-center space-x-2">
-                            <Checkbox
-                              id={question.id + "_" + option.split(' ')[0]}
-                              checked={answers[question.id] === option}
-                              onCheckedChange={(checked) => {
-                                if (checked) {
-                                  handleRadioChange(question.id, question.alternatives ? question.alternatives[index] : option);
-                                } else {
-                                  handleRadioChange(question.id, "");
-                                }
-                              }}
-                            />
-                            <span>{option}</span>
-                          </label>
-                        ))}
-                      </div>
-                      {errors[question.id] && <p className="text-red-500 text-sm">{errors[question.id]}</p>}
-                    </>
-                  )}
+                  <>
+                    <Label className="block text-sm font-medium text-gray-700">
+                      {question.label}
+                      {question.required && <span className="text-red-500">*</span>}
+                    </Label>
+                    <div className="mt-1 grid grid-cols-2 gap-2">
+                      {question.options?.map((option) => (
+                        <label key={option} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={question.id + "_" + option.split(' ')[0]}
+                            checked={answers[question.id] === option}
+                            onCheckedChange={(checked) =>
+                              handleOptionChange(question.id, option)
+                            }
+                          />
+                          <span>{option}</span>
+                        </label>
+                      ))}
+                    </div>
+                    {errors[question.id] && <p className="text-red-500 text-sm">{errors[question.id]}</p>}
+                  </>
+                )}
               </div>
             ))}
           </CardContent>
@@ -582,13 +541,9 @@ export default function Home() {
                   <Checkbox
                     id={currentPage.id + "_" + option.split(' ')[0]}
                     checked={answers[currentPage.id] === option}
-                    onCheckedChange={(checked) => {
-                      if (checked) {
-                        handleOptionChange(currentPage.id, option);
-                      } else {
-                        handleOptionChange(currentPage.id, "");
-                      }
-                    }}
+                    onCheckedChange={(checked) =>
+                      handleOptionChange(currentPage.id, option)
+                    }
                   />
                   <span>{option}</span>
                 </label>
