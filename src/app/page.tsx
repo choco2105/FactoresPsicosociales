@@ -289,7 +289,14 @@ export default function Home() {
     if (currentPage.questions) {
       currentPage.questions.forEach((question) => {
         if (question.required && !answers[question.id]) {
-          newErrors[question.id] = "Este campo es obligatorio.";
+          if (question.type === "checkbox") {
+            // Checkbox group validation
+            if (!answers[question.id] || (Array.isArray(answers[question.id]) && answers[question.id].length === 0)) {
+              newErrors[question.id] = "Este campo es obligatorio.";
+            }
+          } else {
+            newErrors[question.id] = "Este campo es obligatorio.";
+          }
         }
       });
     } else if (currentPage.required && !answers[currentPage.id]) {
@@ -309,11 +316,12 @@ export default function Home() {
     setAnswers((prev) => {
       const currentValues = prev[id] ? (Array.isArray(prev[id]) ? prev[id] : [prev[id]]) : [];
       const isChecked = currentValues.includes(value);
-
-      const updatedValues = isChecked
-        ? currentValues.filter((v) => v !== value)
-        : [...currentValues, value];
-
+  
+      let updatedValues: string[] = [];
+      if (!isChecked) {
+        updatedValues = [value]; // Only allow one selection
+      }
+  
       return { ...prev, [id]: updatedValues };
     });
   };
@@ -375,7 +383,11 @@ export default function Home() {
                             id={question.id + "_" + option.split(' ')[0]}
                             checked={Array.isArray(answers[question.id]) && answers[question.id].includes(option)}
                             onCheckedChange={(checked) => {
-                              handleCheckboxChange(question.id, option);
+                              if (checked) {
+                                handleCheckboxChange(question.id, option);
+                              } else {
+                                handleCheckboxChange(question.id, "");
+                              }
                             }}
                           />
                           <span>{option}</span>
@@ -476,5 +488,3 @@ export default function Home() {
     </div>
   );
 }
-
-    
